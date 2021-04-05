@@ -1024,6 +1024,17 @@ eventHandler.OnPlayerItemUse = function(pid)
         end
         customEventHooks.triggerHandlers("OnPlayerItemUse", eventStatus, {pid, itemRefId})
     end
+
+    -- If the item matches a refId in the equipment table, unequip that equipment. This is the only
+    -- place we can detect when equipments with identical refIds but different conditions are swapped
+    -- in-place. The piece of equipment will be set back to equipped at the next call to SaveEquipment.
+    for index = 0, tes3mp.GetEquipmentSize() - 1 do
+        if Players[pid].data.equipment[index] ~= nil and Players[pid].data.equipment[index].refId == itemRefId then
+            local eq = Players[pid].data.equipment[index]
+            inventoryHelper.setItemToUnequipped(Players[pid].data.inventory, itemRefId, eq.charge, eq.enchantmentCharge)
+            Players[pid].data.equipment[index] = nil
+        end
+    end
 end
 
 eventHandler.OnPlayerMiscellaneous = function(pid)
